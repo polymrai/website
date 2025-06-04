@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,7 @@ const Header = () => {
           <div className="flex items-center pl-4">
             <Link to="/" className="flex items-center">
               <img 
-                src="/lovable-uploads/3607fad2-c8b9-4ce9-b0fc-5732ace3324e.png" 
+                src="/images/logo.png" 
                 alt="polymr.ai" 
                 className="h-26"
               />
