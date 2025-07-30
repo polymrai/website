@@ -25,7 +25,6 @@ const Footer = () => {
               <Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link>
               <Link to="/demo" className="hover:text-white transition-colors">Demo</Link>
               <Link to="/clients" className="hover:text-white transition-colors">Clients</Link>
-              <Link to="/about" className="hover:text-white transition-colors">About Us</Link>
               <Link to="/contact" className="hover:text-white transition-colors">Contact</Link>
               <Link to="/login" className="hover:text-white transition-colors">Login</Link>
             </div>
@@ -43,31 +42,6 @@ const Footer = () => {
                 >
                   polymrai.business@gmail.com
                 </a>
-              </div>
-              <div>
-                <strong>LinkedIn:</strong>
-                <div className="mt-2 space-y-1">
-                  <div>
-                    <a 
-                      href="https://www.linkedin.com/in/naman-mukerji-329539223/" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="hover:text-white transition-colors"
-                    >
-                      Naman Mukerji
-                    </a>
-                  </div>
-                  <div>
-                    <a 
-                      href="https://www.linkedin.com/in/tanmay-neema-099659346/" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="hover:text-white transition-colors"
-                    >
-                      Tanmay Neema
-                    </a>
-                  </div>
-                </div>
               </div>
             </div>
           </div>

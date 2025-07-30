@@ -1,29 +1,18 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-
-interface User {
-  id: string;
-  fullName: string;
-  companyName: string;
-  jobTitle: string;
-  email: string;
-  password: string;
-  erpConnections: any[];
-  savedMrpRuns: any[];
-  lastLogin: string;
-}
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const { toast } = useToast();
+  const { signup, login, user, userData, loading } = useAuth();
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
     fullName: '',
     companyName: '',
@@ -34,80 +23,8 @@ const Login = () => {
     rememberMe: false
   });
 
-  // Check if user is already logged in on page load
-  useEffect(() => {
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      setCurrentUser(user);
-      setIsLoggedIn(true);
-    }
-  }, []);
-
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const getAllUsers = (): User[] => {
-    const users = localStorage.getItem('registeredUsers');
-    return users ? JSON.parse(users) : [];
-  };
-
-  const saveUser = (user: User) => {
-    const users = getAllUsers();
-    const existingUserIndex = users.findIndex(u => u.email === user.email);
-    
-    if (existingUserIndex >= 0) {
-      users[existingUserIndex] = user;
-    } else {
-      users.push(user);
-    }
-    
-    localStorage.setItem('registeredUsers', JSON.stringify(users));
-  };
-
-  const sendNotificationEmail = async (user: User, isNewUser: boolean = false) => {
-    const subject = isNewUser ? 'New User Registration - polymr.ai' : 'User Login - polymr.ai';
-    const body = isNewUser ? 
-      `New user registration details:
-
-Name: ${user.fullName}
-Company: ${user.companyName}
-Job Title: ${user.jobTitle}
-Email: ${user.email}
-Registration Time: ${new Date().toLocaleString()}
-
-Please follow up with the new user.` :
-      `User login notification:
-
-Name: ${user.fullName}
-Email: ${user.email}
-Login Time: ${new Date().toLocaleString()}`;
-
-    try {
-      // Send email using Formspree
-      const response = await fetch('https://formspree.io/f/xdkozpne', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: user.fullName,
-          email: user.email,
-          subject: subject,
-          message: body,
-          _replyto: user.email,
-          _to: 'polymrai.business@gmail.com',
-          _format: 'plain'
-        }),
-      });
-
-      if (!response.ok) {
-        console.error('Failed to send notification email');
-      }
-    } catch (error) {
-      console.error('Error sending notification email:', error);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -124,48 +41,23 @@ Login Time: ${new Date().toLocaleString()}`;
         return;
       }
 
-      const users = getAllUsers();
-      const user = users.find(u => u.email === formData.email);
+      const result = await login(formData.email, formData.password);
       
-      if (!user) {
+      if (!result.success) {
         toast({
-          title: "Account Not Found",
-          description: "No account found with that email address. Please create an account first.",
+          title: "Login Failed",
+          description: "Invalid email or password.",
           variant: "destructive"
         });
         return;
       }
 
-      if (user.password !== formData.password) {
-        toast({
-          title: "Invalid Password",
-          description: "The password you entered is incorrect.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Update last login time
-      user.lastLogin = new Date().toISOString();
-      saveUser(user);
-      
-      // Set current user in localStorage
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      
-      if (formData.rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
-      }
-      
-      setCurrentUser(user);
-      setIsLoggedIn(true);
-      
-      // Send login notification email automatically
-      await sendNotificationEmail(user, false);
-      
       toast({
         title: "Login Successful",
-        description: `Welcome back, ${user.fullName}!`,
+        description: `Welcome back, ${userData?.fullName}!`,
       });
+      
+      navigate('/');
     } else {
       // Handle account creation
       if (!formData.fullName || !formData.companyName || !formData.jobTitle || !formData.email || !formData.password) {
@@ -186,73 +78,46 @@ Login Time: ${new Date().toLocaleString()}`;
         return;
       }
 
-      // Check if user already exists
-      const users = getAllUsers();
-      if (users.find(u => u.email === formData.email)) {
+      const result = await signup(formData.email, formData.password, {
+        fullName: formData.fullName,
+        companyName: formData.companyName,
+        jobTitle: formData.jobTitle,
+        email: formData.email,
+        erpConnections: [],
+        savedMrpRuns: []
+      });
+
+      if (!result.success) {
         toast({
-          title: "Account Already Exists",
-          description: "An account with this email already exists. Please log in instead.",
+          title: "Account Creation Failed",
+          description: "An account with this email might already exist.",
           variant: "destructive"
         });
         return;
       }
 
-      // Create new user
-      const newUser: User = {
-        id: Date.now().toString(),
-        fullName: formData.fullName,
-        companyName: formData.companyName,
-        jobTitle: formData.jobTitle,
-        email: formData.email,
-        password: formData.password,
-        erpConnections: [],
-        savedMrpRuns: [],
-        lastLogin: new Date().toISOString()
-      };
-
-      saveUser(newUser);
-      localStorage.setItem('currentUser', JSON.stringify(newUser));
-      
-      setCurrentUser(newUser);
-      setIsLoggedIn(true);
-      
-      // Send new user notification email automatically
-      await sendNotificationEmail(newUser, true);
-      
       toast({
         title: "Account Created Successfully",
         description: "Welcome to polymr.ai! Your account has been created and you are now logged in.",
       });
+      
+      navigate('/');
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('rememberMe');
-    setIsLoggedIn(false);
-    setCurrentUser(null);
-    setFormData({
-      fullName: '', companyName: '', jobTitle: '', 
-      email: '', password: '', confirmPassword: '', rememberMe: false
-    });
-    
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-    });
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const updateUserData = (updates: Partial<User>) => {
-    if (currentUser) {
-      const updatedUser = { ...currentUser, ...updates };
-      setCurrentUser(updatedUser);
-      saveUser(updatedUser);
-      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-    }
-  };
-
-  if (isLoggedIn && currentUser) {
-    const firstName = currentUser.fullName.split(' ')[0];
+  if (user && userData) {
+    const firstName = userData.fullName.split(' ')[0];
 
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-purple-50 py-20">
@@ -272,9 +137,9 @@ Login Time: ${new Date().toLocaleString()}`;
                       <CardTitle className="text-lg">My ERP Connections</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {currentUser.erpConnections.length > 0 ? (
+                      {userData.erpConnections.length > 0 ? (
                         <div className="space-y-2">
-                          {currentUser.erpConnections.map((connection, index) => (
+                          {userData.erpConnections.map((connection, index) => (
                             <p key={index} className="text-sm text-gray-600">
                               {connection.type}: {connection.status}
                             </p>
@@ -286,9 +151,7 @@ Login Time: ${new Date().toLocaleString()}`;
                       <Button 
                         className="mt-4 bg-purple-600 hover:bg-purple-700 text-white"
                         onClick={() => {
-                          const newConnection = { type: 'NetSuite', status: 'Connected', date: new Date().toISOString() };
-                          updateUserData({ erpConnections: [...currentUser.erpConnections, newConnection] });
-                          toast({ title: "ERP Connected", description: "NetSuite integration added successfully!" });
+                          // Handle ERP connection
                         }}
                       >
                         Connect ERP System
@@ -301,9 +164,9 @@ Login Time: ${new Date().toLocaleString()}`;
                       <CardTitle className="text-lg">Saved MRP Runs</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {currentUser.savedMrpRuns.length > 0 ? (
+                      {userData.savedMrpRuns.length > 0 ? (
                         <div className="space-y-2">
-                          {currentUser.savedMrpRuns.map((run, index) => (
+                          {userData.savedMrpRuns.map((run, index) => (
                             <p key={index} className="text-sm text-gray-600">
                               Run {index + 1}: {run.date} - {run.status}
                             </p>
@@ -315,9 +178,7 @@ Login Time: ${new Date().toLocaleString()}`;
                       <Button 
                         className="mt-4 bg-purple-600 hover:bg-purple-700 text-white"
                         onClick={() => {
-                          const newRun = { date: new Date().toLocaleDateString(), status: 'Completed', results: 'Sample MRP Run' };
-                          updateUserData({ savedMrpRuns: [...currentUser.savedMrpRuns, newRun] });
-                          toast({ title: "MRP Run Started", description: "Your MRP run has been completed successfully!" });
+                          // Handle MRP run
                         }}
                       >
                         Start MRP Run
@@ -331,11 +192,11 @@ Login Time: ${new Date().toLocaleString()}`;
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2 text-sm text-gray-600">
-                        <p><strong>Name:</strong> {currentUser.fullName}</p>
-                        <p><strong>Email:</strong> {currentUser.email}</p>
-                        <p><strong>Company:</strong> {currentUser.companyName}</p>
-                        <p><strong>Job Title:</strong> {currentUser.jobTitle}</p>
-                        <p><strong>Last Login:</strong> {new Date(currentUser.lastLogin).toLocaleString()}</p>
+                        <p><strong>Name:</strong> {userData.fullName}</p>
+                        <p><strong>Email:</strong> {userData.email}</p>
+                        <p><strong>Company:</strong> {userData.companyName}</p>
+                        <p><strong>Job Title:</strong> {userData.jobTitle}</p>
+                        <p><strong>Last Login:</strong> {new Date(userData.lastLogin).toLocaleString()}</p>
                       </div>
                       <Button variant="outline" className="mt-4">
                         Update Profile
@@ -359,7 +220,9 @@ Login Time: ${new Date().toLocaleString()}`;
                 <div className="text-center">
                   <Button 
                     variant="outline"
-                    onClick={handleLogout}
+                    onClick={() => {
+                      // Handle logout
+                    }}
                   >
                     Logout
                   </Button>

@@ -4,7 +4,11 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  sendEmailVerification,
+  applyActionCode,
+  confirmPasswordReset
 } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 
@@ -14,6 +18,10 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  sendPasswordReset: (email: string) => Promise<void>;
+  sendVerificationEmail: () => Promise<void>;
+  verifyEmail: (code: string) => Promise<void>;
+  resetPassword: (code: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -40,7 +48,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    await sendEmailVerification(userCredential.user);
   };
 
   const signIn = async (email: string, password: string) => {
@@ -51,12 +60,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await signOut(auth);
   };
 
+  const sendPasswordReset = async (email: string) => {
+    await sendPasswordResetEmail(auth, email);
+  };
+
+  const sendVerificationEmail = async () => {
+    if (user) {
+      await sendEmailVerification(user);
+    }
+  };
+
+  const verifyEmail = async (code: string) => {
+    await applyActionCode(auth, code);
+  };
+
+  const resetPassword = async (code: string, newPassword: string) => {
+    await confirmPasswordReset(auth, code, newPassword);
+  };
+
   const value = {
     user,
     loading,
     signUp,
     signIn,
-    logout
+    logout,
+    sendPasswordReset,
+    sendVerificationEmail,
+    verifyEmail,
+    resetPassword
   };
 
   return (

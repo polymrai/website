@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { MapPin, Mail, Phone, Clock, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import emailjs from '@emailjs/browser';
 
 const Contact = () => {
   const { toast } = useToast();
@@ -39,62 +38,33 @@ const Contact = () => {
     setIsSubmitting(true);
     
     try {
-      // Initialize EmailJS with public key
-      emailjs.init("YOUR_PUBLIC_KEY"); // Replace with actual public key
-      
-      const templateParams = {
-        from_name: formData.name,
-        from_email: formData.email,
-        subject: formData.subject || 'Contact Form Submission',
-        message: formData.message,
-        to_email: 'polymrai.business@gmail.com'
-      };
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          type: 'contact'
+        }),
+      });
 
-      const result = await emailjs.send(
-        'YOUR_SERVICE_ID', // Replace with actual service ID
-        'YOUR_TEMPLATE_ID', // Replace with actual template ID
-        templateParams
-      );
-
-      console.log('EmailJS result:', result);
-      
-      if (result.status === 200) {
-        setIsSubmitted(true);
-        toast({
-          title: "Message Sent!",
-          description: "Your message has been sent successfully. We'll get back to you soon.",
-        });
-      } else {
-        throw new Error('EmailJS failed');
+      if (!response.ok) {
+        throw new Error('Failed to send message');
       }
-      
+
+      setIsSubmitted(true);
+      toast({
+        title: "Message Sent!",
+        description: "Your message has been sent successfully. We'll get back to you soon.",
+      });
     } catch (error) {
       console.error('Error sending message:', error);
-      
-      // Fallback: Create a proper mailto link
-      const emailBody = encodeURIComponent(
-        `Name: ${formData.name}\n` +
-        `Email: ${formData.email}\n` +
-        `Subject: ${formData.subject || 'Contact Form Submission'}\n\n` +
-        `Message:\n${formData.message}`
-      );
-      
-      const mailtoLink = `mailto:polymrai.business@gmail.com?subject=${encodeURIComponent(formData.subject || 'Contact Form Submission')}&body=${emailBody}`;
-      
-      // Try to open mailto
-      try {
-        window.location.href = mailtoLink;
-        toast({
-          title: "Email Client Opened",
-          description: "Please send the email from your email client to complete the submission.",
-        });
-      } catch (mailtoError) {
-        toast({
-          title: "Send Failed",
-          description: "Please email us directly at polymrai.business@gmail.com",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Send Failed",
+        description: "Failed to send message. Please try again later.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -112,7 +82,7 @@ const Contact = () => {
               Thank you, {formData.name.split(' ')[0]}!
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              Your message has been sent successfully to polymrai.business@gmail.com. 
+              Your message has been sent successfully. 
               We'll get back to you within 24 hours.
             </p>
             <Button 
@@ -220,66 +190,10 @@ const Contact = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center">
-                    <Phone className="w-5 h-5 text-purple-600 mr-3" />
-                    <div>
-                      <p className="font-semibold text-gray-900">Phone (Naman)</p>
-                      <a 
-                        href="tel:+16158069889"
-                        className="text-purple-600 hover:text-purple-700"
-                      >
-                        (615) 806-9889
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center">
-                    <Phone className="w-5 h-5 text-purple-600 mr-3" />
-                    <div>
-                      <p className="font-semibold text-gray-900">Phone (Tanmay)</p>
-                      <a 
-                        href="tel:+16153102189"
-                        className="text-purple-600 hover:text-purple-700"
-                      >
-                        (615) 310-2189
-                      </a>
-                    </div>
-                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">Connect With Our Founders</h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <p className="font-semibold text-gray-900 mb-2">Naman Mukerji</p>
-                    <a 
-                      href="https://www.linkedin.com/in/naman-mukerji-329539223/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-purple-600 hover:text-purple-700"
-                    >
-                      LinkedIn Profile →
-                    </a>
-                  </div>
-
-                  <div>
-                    <p className="font-semibold text-gray-900 mb-2">Tanmay Neema</p>
-                    <a 
-                      href="https://www.linkedin.com/in/tanmay-neema-099659346/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-purple-600 hover:text-purple-700"
-                    >
-                      LinkedIn Profile →
-                    </a>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

@@ -76,38 +76,6 @@ const Header = () => {
               Clients
             </Link>
             
-            <DropdownMenu>
-              <DropdownMenuTrigger className="text-gray-600 hover:text-purple-600 transition-colors">
-                About Us
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-white border border-gray-200 shadow-lg">
-                <DropdownMenuItem asChild>
-                  <Link to="/about" className="w-full px-4 py-2 hover:bg-gray-100">
-                    About polymr.ai
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <a 
-                    href="https://www.linkedin.com/in/naman-mukerji-329539223/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-full px-4 py-2 hover:bg-gray-100"
-                  >
-                    Naman Mukerji
-                  </a>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <a 
-                    href="https://www.linkedin.com/in/tanmay-neema-099659346/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-full px-4 py-2 hover:bg-gray-100"
-                  >
-                    Tanmay Neema
-                  </a>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
 
             <Link 
               to="/contact" 
@@ -153,9 +121,6 @@ const Header = () => {
               </Link>
               <Link to="/clients" className="text-gray-600 hover:text-purple-600" onClick={() => setIsMenuOpen(false)}>
                 Clients
-              </Link>
-              <Link to="/about" className="text-gray-600 hover:text-purple-600" onClick={() => setIsMenuOpen(false)}>
-                About Us
               </Link>
               <Link to="/contact" className="text-gray-600 hover:text-purple-600" onClick={() => setIsMenuOpen(false)}>
                 Contact

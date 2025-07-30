@@ -11,7 +11,6 @@ import SolutionOverview from "./pages/SolutionOverview";
 import Pricing from "./pages/Pricing";
 import Demo from "./pages/Demo";
 import Clients from "./pages/Clients";
-import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -32,7 +31,6 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/demo" element={<Demo />} />
             <Route path="/clients" element={<Clients />} />
-            <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login />} />
             <Route path="*" element={<NotFound />} />
