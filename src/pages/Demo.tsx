@@ -144,7 +144,7 @@ Additional Comments: ${formData.comments || 'None'}
                   </video>
                 </div>
                 <p className="text-sm text-gray-600 mt-3">
-                  Watch our product demo to see how polymr.ai streamlines manufacturing operations
+                  Watch our product demo to see how polymr.ai streamlines manufacturing operations 
                 </p>
               </div>
             </div>
