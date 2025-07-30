@@ -124,9 +124,30 @@ Additional Comments: ${formData.comments || 'None'}
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Request a Demo</h1>
-            <p className="text-xl text-gray-600">
-              See how PolyMR.ai can transform your manufacturing operations. Schedule a personalized demo today.
+            <p className="text-xl text-gray-600 mb-8">
+              See how polymr.ai can transform your manufacturing operations. Schedule a personalized demo today.
             </p>
+            
+            {/* Demo Video Section */}
+            <div className="max-w-4xl mx-auto mb-12">
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">See polymr.ai in Action</h2>
+                <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                  <video
+                    controls
+                    className="w-full h-full object-cover"
+                    poster="/images/logo.png"
+                  >
+                    <source src="/videos/demo-video.mov" type="video/mp4" />
+                    <source src="/videos/demo-video.mov" type="video/quicktime" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+                <p className="text-sm text-gray-600 mt-3">
+                  Watch our product demo to see how polymr.ai streamlines manufacturing operations
+                </p>
+              </div>
+            </div>
           </div>
 
           <Card className="shadow-lg">
